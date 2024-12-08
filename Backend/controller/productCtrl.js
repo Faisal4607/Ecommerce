@@ -3,6 +3,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongodbId");
+const mongoose = require('mongoose');
 
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -44,16 +45,27 @@ const deleteProduct = asyncHandler(async (req, res) => {
   }
 });
 
-const getaProduct = asyncHandler(async (req, res) => {
+const getaProduct = async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id);
-  try {
-    const findProduct = await Product.findById(id).populate("color");
-    res.json(findProduct);
-  } catch (error) {
-    throw new Error(error);
+
+  // Validate Product ID
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ status: 'fail', message: 'Invalid Product ID' });
   }
-});
+
+  try {
+    // Fetch Product with Population
+    const product = await Product.findById(id).populate('category');
+    if (!product) {
+      return res.status(404).json({ status: 'fail', message: 'Product not found' });
+    }
+
+    res.status(200).json({ status: 'success', product });
+  } catch (error) {
+    res.status(500).json({ status: 'fail', message: error.message });
+  }
+};
+
 
 const getAllProduct = asyncHandler(async (req, res) => {
   try {

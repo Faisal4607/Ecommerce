@@ -1,24 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ProductSlider from "../components/ProductSlider";
+import axios from "axios";
 
 const HomePage = () => {
-  const products = [
-    { id: 1, name: "Nuts - Chilgoza", image: "/images/apricot_new.png" },
-    { id: 2, name: "Healthy Dried Apricot", image: "/images/brand-02.png" },
-    { id: 3, name: "Mixed Dry Fruits", image: "/images/brand-03.png" },
-    { id: 4, name: "Pecans & More", image: "/images/brand-04.png" },
-    { id: 5, name: "Desi Delights", image: "/images/brand-05.png" },
-    { id: 1, name: "Nuts - Chilgoza", image: "/images/brand-01.png" },
-    { id: 2, name: "Healthy Dried Apricot", image: "/images/brand-02.png" },
-    { id: 3, name: "Mixed Dry Fruits", image: "/images/brand-03.png" },
-    { id: 4, name: "Pecans & More", image: "/images/brand-04.png" },
-    { id: 5, name: "Desi Delights", image: "/images/brand-05.png" },
-    { id: 1, name: "Nuts - Chilgoza", image: "/images/brand-01.png" },
-    { id: 2, name: "Healthy Dried Apricot", image: "/images/brand-02.png" },
-    { id: 3, name: "Mixed Dry Fruits", image: "/images/brand-03.png" },
-    { id: 4, name: "Pecans & More", image: "/images/brand-04.png" },
-    { id: 5, name: "Desi Delights", image: "/images/brand-05.png" },
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/product");
+        console.log("API Response:", response.data); // Log the response
+        setProducts(response.data); // Assuming response.data is an array
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching products:", err); // Log the error details
+        setError("Failed to load products.");
+        setLoading(false);
+      }
+    };
+  
+    fetchProducts();
+  }, []);
+  
+
+  if (loading) return <p>Loading products...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div>

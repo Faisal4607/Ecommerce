@@ -20,4 +20,11 @@ const userSchema = new mongoose.Schema({
   resetToken: { type: String, default: null }, // For password recovery
 }, { timestamps: true });
 
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next(); // Skip if password is not modified
+  this.password = await bcrypt.hash(this.password, 10); // Hash the password
+  next();
+});
+
+
 module.exports = mongoose.model("User", userSchema);

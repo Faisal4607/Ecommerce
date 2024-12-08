@@ -4,6 +4,7 @@ const Cart = require("../models/cartModel");
 const Coupon = require("../models/promotionModel");
 const Order = require("../models/orderModel");
 const uniqid = require("uniqid");
+const bcrypt = require("bcrypt");
 
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
@@ -28,31 +29,38 @@ const createUser = asyncHandler(async (req, res) => {
 
 // Login a user -----------------------------------------------
 const loginUserCtrl = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-  const findUser = await User.findOne({ email });
-  if (findUser && (await bcrypt.compare(password, findUser.password))) {
-    const refreshToken = await generateRefreshToken(findUser._id);
-    const updatedUser = await User.findByIdAndUpdate(
-      findUser.id,
-      { refreshToken },
-      { new: true }
-    );
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      maxAge: 72 * 60 * 60 * 1000,
-    });
-    res.json({
-      _id: findUser._id,
-      name: findUser.name,
-      email: findUser.email,
-      loyaltyPoints: findUser.loyaltyPoints,
-      role: findUser.role,
-      token: generateToken(findUser._id),
-    });
-  } else {
-    throw new Error("Invalid Credentials");
+  try {
+    const { email, password } = req.body;
+    const findUser = await User.findOne({ email });
+
+    if (findUser && (await bcrypt.compare(password, findUser.password))) {
+      const refreshToken = await generateRefreshToken(findUser._id);
+      await User.findByIdAndUpdate(findUser.id, { refreshToken }, { new: true });
+
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 72 * 60 * 60 * 1000, // 72 hours
+      });
+
+      res.json({
+        _id: findUser._id,
+        name: findUser.name,
+        email: findUser.email,
+        loyaltyPoints: findUser.loyaltyPoints,
+        role: findUser.role,
+        token: generateToken(findUser._id),
+      });
+    } else {
+      res.status(401);
+      throw new Error("Invalid Credentials");
+    }
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: error.message });
   }
 });
+
+
 
 // Admin Login ------------------------------------------------
 const loginAdmin = asyncHandler(async (req, res) => {
@@ -353,15 +361,14 @@ const updatePassword = asyncHandler(async (req, res) => {
 });
 
 const userCart = asyncHandler(async (req, res) => {
-  const { productId, color, quantity, price } = req.body;
-
+  const { productId, quantity, price } = req.body;  // Removed color
   const { _id } = req.user;
   validateMongoDbId(_id);
+  
   try {
     let newCart = await new Cart({
       userId: _id,
       productId,
-      color,
       price,
       quantity,
     }).save();
@@ -371,13 +378,14 @@ const userCart = asyncHandler(async (req, res) => {
   }
 });
 
+
 const getUserCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
+
   try {
     const cart = await Cart.find({ userId: _id })
-      .populate("productId")
-      .populate("color");
+      .populate("productId"); 
     res.json(cart);
   } catch (error) {
     throw new Error(error);
@@ -463,8 +471,8 @@ const getMyOrders = asyncHandler(async (req, res) => {
   try {
     const orders = await Order.find({ user: _id })
       .populate("user")
-      .populate("orderItems.product")
-      .populate("orderItems.color");
+      .populate("orderItems.product");
+      // .populate("orderItems.color");  // Removed the color field
     res.json({
       orders,
     });
@@ -472,6 +480,22 @@ const getMyOrders = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
+const getsingleOrder = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  try {
+    const orders = await Order.findOne({ _id: id })
+      .populate("user")
+      .populate("orderItems.product");
+      // .populate("orderItems.color"); // Removed the color field
+    res.json({
+      orders,
+    });
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 
 const getAllOrders = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -487,20 +511,6 @@ const getAllOrders = asyncHandler(async (req, res) => {
   }
 });
 
-const getsingleOrder = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  try {
-    const orders = await Order.findOne({ _id: id })
-      .populate("user")
-      .populate("orderItems.product")
-      .populate("orderItems.color");
-    res.json({
-      orders,
-    });
-  } catch (error) {
-    throw new Error(error);
-  }
-});
 
 const updateOrder = asyncHandler(async (req, res) => {
   const { id } = req.params;

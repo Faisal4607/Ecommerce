@@ -231,7 +231,7 @@ const Checkout = () => {
               </nav>
               <h4 className="title total">Contact Information</h4>
               <p className="user-details total">
-                Dev Jariwala (devjariwala8444@gmail.com)
+                M Faisal (mfaisal4355@gmail.com)
               </p>
               <h4 className="mb-3">Shipping Address</h4>
               <form
@@ -251,7 +251,7 @@ const Checkout = () => {
                     <option value="" selected disabled>
                       Select Country
                     </option>
-                    <option value="India">India</option>
+                    <option value="Pakistan">Pakistan</option>
                   </select>
                   <div className="error ms-2 my-1">
                     {formik.touched.country && formik.errors.country}
@@ -336,7 +336,10 @@ const Checkout = () => {
                     <option value="" selected disabled>
                       Select State
                     </option>
-                    <option value="Gujarat">Gujarat</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Sindh">Sindh</option>
+                    <option value="KPK">KPK</option>
+                    <option value="Balochistan">Balochistan</option>
                   </select>
                   <div className="error ms-2 my-1">
                     {formik.touched.state && formik.errors.state}

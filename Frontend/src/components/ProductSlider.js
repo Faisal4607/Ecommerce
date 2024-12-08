@@ -1,47 +1,59 @@
 import React, { useRef } from "react";
 import { Link } from "react-router-dom";
 import "./ProductSlider.css";
+import { useNavigate } from 'react-router-dom'; 
+import { getAProduct } from '../features/products/productSlilce'; 
 
 const ProductSlider = ({ products }) => {
-  // Use a ref to control the slider
+
+  const navigate = useNavigate();
+
+  const handleProductClick = (productId) => {
+    navigate(`/product/${productId}`);
+  };
+
+
   const sliderRef = useRef(null);
 
-  // Scroll the slider to the left
   const scrollLeft = () => {
     sliderRef.current.scrollBy({
-      left: -200, // Adjust the scroll amount as needed
+      left: -200,
       behavior: "smooth",
     });
   };
 
-  // Scroll the slider to the right
   const scrollRight = () => {
     sliderRef.current.scrollBy({
-      left: 200, // Adjust the scroll amount as needed
+      left: 200,
       behavior: "smooth",
     });
   };
+
 
   return (
     <div className="slider-container">
-      {/* Left Scroll Button */}
       <button className="scroll-button left" onClick={scrollLeft}>
         &#9664;
       </button>
 
-      {/* Slider Items */}
       <div className="slider" ref={sliderRef}>
         {products.map((product) => (
           <div className="slider-item" key={product.id}>
             <Link to={`/product/${product.id}`}>
-              <img src={product.image} alt={product.name} className="product-image" />
+              {/* Display the first image in the images array, or a fallback image if empty */}
+              <img
+                src={product.images && product.images[0] ? product.images[0] : "https://via.placeholder.com/150"}
+                alt={product.name}
+                className="product-image"
+                onClick={() => handleProductClick(product.id)} 
+                style={{ cursor: 'pointer' }}  
+              />
               <p className="product-name">{product.name}</p>
             </Link>
           </div>
         ))}
       </div>
 
-      {/* Right Scroll Button */}
       <button className="scroll-button right" onClick={scrollRight}>
         &#9654;
       </button>

@@ -15,6 +15,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 require('dotenv').config();
 
+//mongoose.set('strictPopulate', false);
 dbConnect();
 app.use(morgan("dev"));
 app.use(cors());
@@ -26,6 +27,8 @@ app.use("/api/product", productRouter);
 app.use("/api/category", categoryRouter);
 app.use("/api/coupon", couponRouter);
 app.use("/api/upload", uploadRouter);
+
+
 
 app.use(notFound);
 app.use(errorHandler);

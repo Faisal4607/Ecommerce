@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const CategorySchema = new mongoose.Schema({
@@ -11,11 +12,6 @@ const CategorySchema = new mongoose.Schema({
   },
   image: {
     type: String, // URL of the category image (e.g., for banners or thumbnails)
-  },
-  parentCategory: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category", // Self-referencing for subcategories
-    default: null, // Null for top-level categories
   },
   createdAt: {
     type: Date,
